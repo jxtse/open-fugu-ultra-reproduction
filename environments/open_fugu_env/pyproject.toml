@@ -1,0 +1,13 @@
+[project]
+name = "open-fugu-env"
+version = "0.1.0"
+description = "Constrained Fugu-Ultra workflow environment for verifiers v1"
+requires-python = ">=3.11"
+dependencies = ["pydantic>=2"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["open_fugu_env"]

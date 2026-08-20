@@ -1,0 +1,54 @@
+max_steps = 100
+[wandb]
+project = "open-fugu-ultra"
+name = "phase-b-thinking-infra-safe"
+[deployment]
+num_train_gpus = 4
+num_infer_gpus = 4
+[model]
+name = "/vePFS-Mindverse/share/models/Qwen/Qwen3.5-9B"
+[orchestrator]
+batch_size = 16
+group_size = 8
+# Cap concurrent episodes at 8 (down from default 16) after 2026-08-18 night:
+# Substrate endpoint timed out under ~16-way concurrency. 2026-08-19: Richard
+# chose 4-way (time-for-stability tradeoff); 8-way passed a load probe but
+# tail latency already stretched to 22-25s there.
+max_inflight_episodes = 8
+# Hard floor: must be >= group_size (8). To trade time for stability beyond
+# that, smooth dispatch bursts with a rate limiter instead of lowering permits.
+tasks_per_minute = 20
+seq_len = 16384
+[orchestrator.train.sampling]
+max_completion_tokens = 12288
+temperature = 0.7
+extra_body = { chat_template_kwargs = { enable_thinking = true } }
+[[orchestrator.train.source]]
+name = "open-fugu-phase-b"
+[orchestrator.train.source.env.taskset]
+id = "open-fugu-env"
+source = "manifest"
+manifest_path = "/vePFS-Mindverse/share/richard/open-fugu-ultra/data/phase_b/phase_b_manifest.jsonl"
+samples = 2100
+seed = 17
+[orchestrator.train.source.env.orchestrator.harness]
+id = "null"
+[orchestrator.train.source.env.worker_a.harness]
+id = "null"
+[orchestrator.train.source.env.worker_b.harness]
+id = "null"
+[orchestrator.train.source.env.worker_c.harness]
+id = "null"
+[trainer.model]
+seq_len = 16384
+[inference.vllm]
+gpu_memory_utilization = 0.82
+data_parallel_size = 4
+max_model_len = 8192
+enforce_eager = true
+[orchestrator.renderer]
+name = "default"
+reasoning_parser = "think"
+[ckpt]
+interval = 1
+keep_last = 10

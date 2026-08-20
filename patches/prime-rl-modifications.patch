@@ -1,0 +1,70 @@
+diff --git a/src/prime_rl/inference/vllm/server.py b/src/prime_rl/inference/vllm/server.py
+index 728574aba..48ce11814 100644
+--- a/src/prime_rl/inference/vllm/server.py
++++ b/src/prime_rl/inference/vllm/server.py
+@@ -174,6 +174,9 @@ async def custom_init_app_state(
+         upstream = state.serving_tokens
+         prime_serving = object.__new__(PrimeRlServingTokens)
+         prime_serving.__dict__.update(upstream.__dict__)
++        # The internal endpoint returns token IDs, so server-side detokenization is
++        # unnecessary and can fail for tokenizer vocabulary entries that map to None.
++        prime_serving.force_no_detokenize = True
+         state.serving_tokens = prime_serving
+ 
+ 
+diff --git a/src/prime_rl/orchestrator/train_sink.py b/src/prime_rl/orchestrator/train_sink.py
+index 5f052c14e..b934343e6 100644
+--- a/src/prime_rl/orchestrator/train_sink.py
++++ b/src/prime_rl/orchestrator/train_sink.py
+@@ -25,6 +25,7 @@ from collections import defaultdict
+ from prime_rl.configs.orchestrator import OrchestratorConfig
+ from prime_rl.orchestrator.envs import TrainEnvs
+ from prime_rl.orchestrator.filters import RolloutFilter, apply_filters
++from prime_rl.orchestrator.infra_guard import InfraCircuitBreaker, group_infra_verdict
+ from prime_rl.orchestrator.metrics import TrainRollouts
+ from prime_rl.orchestrator.trajectories import trace_to_samples
+ from prime_rl.orchestrator.types import Rollout, TrainBatch
+@@ -93,6 +94,13 @@ class TrainSink:
+         self.pre_filter_seen = 0
+         self.pre_filter_dropped = 0
+         self.pre_filter_dropped_by_name: dict[str, int] = {}
++        # Infrastructure guard: groups that lost members to endpoint/tunnel
++        # failures are dropped whole (survivor subsets are action-conditioned
++        # and bias the GRPO baseline); a sliding-window breaker aborts the run
++        # on correlated outages instead of burning refill sampling.
++        self.infra_breaker = InfraCircuitBreaker()
++        self.infra_dropped_groups = 0
++        self.infra_dropped_rollouts = 0
+ 
+     def group_size_for(self, env_name: str) -> int:
+         return self.train_envs.get(env_name).config.group_size
+@@ -184,6 +192,29 @@ class TrainSink:
+         num_errored = len(group) - len(survivors)
+ 
+         env = self.train_envs.get(env_name)
++        # Screen for infrastructure losses before any survivor math. A group
++        # that lost members to infra failures is incomplete in a way that is
++        # correlated with the policy's own worker choice; training on its
++        # survivors under-represents exactly the workflows the outage hit.
++        verdict = group_infra_verdict(
++            error_messages=[
++                r.last_error.message if r.last_error is not None else None
++                for r in group
++                if r.has_error
++            ]
++        )
++        self.infra_breaker.record(infra_dropped=verdict.drop_group)
++        self.infra_breaker.raise_if_tripped()
++        if verdict.drop_group:
++            self.infra_dropped_groups += 1
++            self.infra_dropped_rollouts += len(group)
++            get_logger().warning(
++                f"Dropping group | env={env_name} task_idx={task_idx} | "
++                f"rollouts={len(group)} (infra_errored={verdict.infra_errored}) | "
++                f"infrastructure failure — survivors excluded to keep the group baseline unbiased "
++                f"(window infra rate {self.infra_breaker.infra_rate:.1%})"
++            )
++            return
+         # Untrainable traces carry no samples and must not skew the group baseline.
+         survivors = [r for r in survivors if r.agent.trainable]
+         if not survivors:

@@ -1,0 +1,19 @@
+{
+  "raw_rows": 1791700,
+  "unique_questions": 17186,
+  "gpqa_splits": {
+    "gpqa_main": "UNAVAILABLE: Dataset 'Idavidrein/gpqa' is a gated dataset on the Hub. You must be authenticated to access it.",
+    "gpqa_extended": "UNAVAILABLE: Dataset 'Idavidrein/gpqa' is a gated dataset on the Hub. You must be authenticated to access it.",
+    "gpqa_diamond": "UNAVAILABLE: Dataset 'Idavidrein/gpqa' is a gated dataset on the Hub. You must be authenticated to access it."
+  },
+  "gpqa_flagged": 0,
+  "clean_pool": 17186,
+  "phase_a_size": 500,
+  "seed": 17,
+  "denylist_na": {
+    "livecodebench": "no overlap surface: DAPO is pure math, LCB is code",
+    "swe_bench_pro": "no overlap surface: no repo/issue data in DAPO",
+    "terminal_bench": "no overlap surface: no terminal tasks in DAPO",
+    "hle": "HLE public set not scanned offline (gated); DAPO predates HLE curation and is math-only \u2014 risk accepted and documented"
+  }
+}

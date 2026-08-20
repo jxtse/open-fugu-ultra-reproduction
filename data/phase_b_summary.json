@@ -1,0 +1,63 @@
+{
+  "seed": 17,
+  "inputs": {
+    "prescreen_tasks": 16838,
+    "qwen_screen": 16838,
+    "frontier_labels": 990
+  },
+  "qwen_wrong_total": 14224,
+  "toxic_excluded_frontier_0of3": 32,
+  "toxic_idx": [
+    46,
+    68,
+    143,
+    146,
+    168,
+    186,
+    195,
+    210,
+    235,
+    244,
+    258,
+    281,
+    428,
+    449,
+    466,
+    467,
+    475,
+    478,
+    481,
+    556,
+    570,
+    592,
+    616,
+    626,
+    654,
+    718,
+    725,
+    848,
+    916,
+    923,
+    929,
+    986
+  ],
+  "hard_pool": {
+    "total": 14192,
+    "labeled_frontier_ge1": 799,
+    "unlabeled": 13393
+  },
+  "manifest": {
+    "hard": 2000,
+    "hard_labeled_included": 799,
+    "hard_unlabeled_sampled": 1201,
+    "easy_anchor": 100,
+    "total": 2100
+  },
+  "easy_pool_size": 2614,
+  "calibration": {
+    "qwen_correct_labeled": 159,
+    "qwen_correct_not_all_frontier": 2
+  },
+  "hash": "sha256(utf-8 question text)",
+  "note": "additive; phase_a untouched; toxic = qwen wrong AND 0/3 frontier correct (reward saturation, no gradient)"
+}

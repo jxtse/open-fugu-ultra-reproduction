@@ -1,0 +1,174 @@
+model = "fugu-base"
+num_tasks = 60
+num_rollouts = 2
+shuffle = false
+max_concurrent = 4
+verbose = false
+rich = true
+server = false
+push = false
+output_dir = "/vePFS-Mindverse/share/richard/open-fugu-ultra/runs/heldout-eval/base-v1"
+
+[env]
+id = "open-fugu-env"
+max_concurrent_agents = 1
+
+[env.taskset]
+id = "open-fugu-env"
+samples = 60
+source = "manifest"
+manifest_path = "/vePFS-Mindverse/share/richard/open-fugu-ultra/data/phase_a/heldout_eval_manifest.jsonl"
+seed = 17
+
+[env.taskset.task]
+judges = []
+
+[env.taskset.task.stops]
+
+[env.taskset.task.metrics]
+
+[env.taskset.task.rewards]
+
+[env.timeout]
+
+[env.retries]
+max_retries = 0
+include = []
+exclude = []
+
+[env.interception]
+type = "elastic"
+multiplex = 32
+
+[env.orchestrator]
+max_turns = 1
+
+[env.orchestrator.harness]
+id = "null"
+forward_env = []
+tool_timeout = 600.0
+skills = []
+
+[env.orchestrator.harness.env]
+
+[env.orchestrator.runtime]
+type = "subprocess"
+
+[env.orchestrator.sampling]
+temperature = 0.7
+max_tokens = 12288
+
+[env.orchestrator.sampling.chat_template_kwargs]
+enable_thinking = true
+
+[env.orchestrator.sampling.extra_body.chat_template_kwargs]
+enable_thinking = true
+
+[env.orchestrator.timeout]
+
+[env.orchestrator.retries]
+max_retries = 0
+include = []
+exclude = []
+
+[env.worker_a]
+model = "gpt-5.5"
+max_turns = 1
+
+[env.worker_a.harness]
+id = "null"
+forward_env = []
+tool_timeout = 600.0
+skills = []
+
+[env.worker_a.harness.env]
+
+[env.worker_a.runtime]
+type = "subprocess"
+
+[env.worker_a.client]
+base_url = "http://127.0.0.1:13000/v1"
+api_key_var = "OPENFUGU_WORKER_KEY"
+type = "eval"
+
+[env.worker_a.client.headers]
+
+[env.worker_a.timeout]
+
+[env.worker_a.retries]
+max_retries = 0
+include = []
+exclude = []
+
+[env.worker_b]
+model = "dev-anthropic-claude-opus-4-8"
+max_turns = 1
+
+[env.worker_b.harness]
+id = "null"
+forward_env = []
+tool_timeout = 600.0
+skills = []
+
+[env.worker_b.harness.env]
+
+[env.worker_b.runtime]
+type = "subprocess"
+
+[env.worker_b.client]
+base_url = "http://127.0.0.1:13000/v1"
+api_key_var = "OPENFUGU_WORKER_KEY"
+type = "eval"
+
+[env.worker_b.client.headers]
+
+[env.worker_b.timeout]
+
+[env.worker_b.retries]
+max_retries = 0
+include = []
+exclude = []
+
+[env.worker_c]
+model = "gemini-3.1-pro-preview"
+max_turns = 1
+
+[env.worker_c.harness]
+id = "null"
+forward_env = []
+tool_timeout = 600.0
+skills = []
+
+[env.worker_c.harness.env]
+
+[env.worker_c.runtime]
+type = "subprocess"
+
+[env.worker_c.client]
+base_url = "http://127.0.0.1:18142/v1"
+api_key_var = "OPENFUGU_WORKER_KEY"
+type = "eval"
+
+[env.worker_c.client.headers]
+
+[env.worker_c.timeout]
+
+[env.worker_c.retries]
+max_retries = 2
+include = [
+    "ProviderError",
+]
+exclude = []
+
+[serve.pool]
+type = "elastic"
+multiplex = 128
+
+[client]
+base_url = "http://127.0.0.1:18000/v1"
+api_key_var = "OPENFUGU_WORKER_KEY"
+type = "eval"
+
+[client.headers]
+
+[sampling]

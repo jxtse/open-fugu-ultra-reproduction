@@ -1,0 +1,17 @@
+diff --git a/verifiers/v1/harnesses/null/program.py b/verifiers/v1/harnesses/null/program.py
+index d5231de0..e66013a4 100644
+--- a/verifiers/v1/harnesses/null/program.py
++++ b/verifiers/v1/harnesses/null/program.py
+@@ -183,7 +183,11 @@ async def main() -> None:
+     while True:
+         message = await chat(client, args.model, messages, tools)
+         messages.append(message.model_dump(exclude_none=True))
+-        if not message.tool_calls:
++        # With no MCP tools there is nothing to dispatch. Some providers may
++        # still hallucinate a tool call even when `tools` was omitted; treating
++        # that as a continuation creates an invalid assistant/tool-only request
++        # and can loop forever. Null-without-tools is deliberately one-shot.
++        if not tools or not message.tool_calls:
+             break
+         for call in message.tool_calls:
+             name = call.function.name

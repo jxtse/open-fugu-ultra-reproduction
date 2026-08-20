@@ -1,0 +1,29 @@
+model = "fugu-step100"
+num_tasks = 60
+num_rollouts = 2
+shuffle = false
+max_concurrent = 4
+push = false
+output_dir = "/vePFS-Mindverse/share/richard/open-fugu-ultra/runs/heldout-eval/step100-v1"
+
+[client]
+type = "eval"
+base_url = "http://127.0.0.1:18000/v1"
+api_key_var = "OPENFUGU_WORKER_KEY"
+
+[env]
+id = "open-fugu-env"
+
+[env.taskset]
+id = "open-fugu-env"
+source = "manifest"
+manifest_path = "/vePFS-Mindverse/share/richard/open-fugu-ultra/data/phase_a/heldout_eval_manifest.jsonl"
+samples = 60
+seed = 17
+
+[env.orchestrator.harness]
+id = "null"
+[env.orchestrator.sampling]
+max_tokens = 12288
+temperature = 0.7
+extra_body = { chat_template_kwargs = { enable_thinking = true } }
